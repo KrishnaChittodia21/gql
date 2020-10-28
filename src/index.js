@@ -1,133 +1,62 @@
 import { GraphQLServer } from 'graphql-yoga';
 import { v4 as uuidv4 } from 'uuid';
 
-const comments = [
-  {
-    id: 21,
-    text: 'Hello A',
-    author: 1,
-    post: '1'
-  },
-  {
-    id: 22,
-    text: 'Hello B',
-    author: 1,
-    post: '2'
-  },
-  {
-    id: 23,
-    text: 'Hello C',
-    author: 2,
-    post: '1'
-  },
-  {
-    id: 24,
-    text: 'Hello D',
-    author: 2,
-    post: '3'
-  }
-]
-
-const users = [{
+let users = [{
   id: '1',
-  name: 'k1',
-  email: 'k1@k1.com',
-  age: 21
-},
-{
+  name: 'Andrew',
+  email: 'andrew@example.com',
+  age: 27
+}, {
   id: '2',
-  name: 'k2',
-  email: 'k2@k2.com'
-},
-{
+  name: 'Sarah',
+  email: 'sarah@example.com'
+}, {
   id: '3',
-  name: 'k3',
-  email: 'k3@k3.com',
+  name: 'Mike',
+  email: 'mike@example.com'
 }]
 
-const posts = [
-  {
-    id: '1',
-    title: 'first post',
-    body: 'test body',
-    published: true,
-    author: '1'
-  },
-  {
-    id: '2',
-    title: 'second post',
-    body: 'test body',
-    published: false,
-    author: '1',
-  },
-  {
-    id: '3',
-    title: 'third post',
-    body: 'test body',
-    published: true,
-    author: '2'
-  }
-]
+let posts = [{
+  id: '10',
+  title: 'GraphQL 101',
+  body: 'This is how to use GraphQL...',
+  published: true,
+  author: '1'
+}, {
+  id: '11',
+  title: 'GraphQL 201',
+  body: 'This is an advanced GraphQL post...',
+  published: false,
+  author: '1'
+}, {
+  id: '12',
+  title: 'Programming Music',
+  body: '',
+  published: true,
+  author: '2'
+}]
 
-const typeDefs = `
-  type Query {
-    users(query: String): [User!]!
-    posts(query: String): [Post!]!
-    comments: [Comments!]!
-    me: User!
-    post: Post!
-  }
-
-  type Mutation {
-    createUser(data: CreateUserInput): User!
-    createPost(data: CreatePostInput): Post!
-    createComment(data: CreateCommentInput): Comments!
-  }
-
-  input CreateUserInput {
-    name: String!
-    email: String!
-    age: Int
-  }
-
-  input CreatePostInput {
-    title: String!
-    body: String!
-    published: Boolean!
-    author: ID!
-  }
-
-  input CreateCommentInput {
-    text: String!
-    author: ID!
-    post: ID!
-  }
-
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-    age: Int
-    posts: [Post!]!
-    comments: [Comments!]!
-  }
-
-  type Post {
-    id: ID!
-    title: String!
-    body: String!
-    published: Boolean!
-    author: User!
-    comments: [Comments!]!
-  }
-
-  type Comments {
-    id: ID!
-    text: String!
-    author: User!
-    post: Post!
-  }
-`;
+let comments = [{
+  id: '102',
+  text: 'This worked well for me. Thanks!',
+  author: '3',
+  post: '10'
+}, {
+  id: '103',
+  text: 'Glad you enjoyed it.',
+  author: '1',
+  post: '10'
+}, {
+  id: '104',
+  text: 'This did no work.',
+  author: '2',
+  post: '11'
+}, {
+  id: '105',
+  text: 'Nevermind. I got it to work.',
+  author: '1',
+  post: '12'
+}]
 
 const resolvers = {
   Query: {
@@ -207,6 +136,40 @@ const resolvers = {
       }
       comments.push(comment);
       return comment;
+    },
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex((user) => user.id === args.id);
+      if(userIndex === -1) {
+        throw new Error("user not found");
+      }
+      const deletedUser = users.splice(userIndex, 1);
+      posts = posts.filter((post) => {
+        const match = post.author === args.id;
+
+        if(match) {
+          comments = comments.filter((comment) => comment.post !== post.id);
+        }
+        return !match;
+      })
+      comments =  comments.filter((comment) => comment.author !== args.id);
+      return deletedUser[0];
+    },
+    deletePost(parent, args, ctx, info) {
+      const postIndex = posts.findIndex((post) => post.id === args.id);
+      if(postIndex === -1) {
+        throw new Error("post does not exists");
+      }
+      const deletedPost = posts.splice(postIndex, 1);
+      comments = comments.filter((comment) => comment.post !== args.id);
+      return deletedPost[0];
+    },
+    deleteComment(parent, args, ctx, info) {
+      const commentIndex = comments.findIndex((comment) => comment.id === args.id);
+      if(commentIndex === -1) {
+        throw new Error('Comment does not exists');
+      }
+      const deletedComment = comments.splice(commentIndex, 1);
+      return deletedComment[0];
     }
   },
   Post: {
@@ -248,7 +211,7 @@ const resolvers = {
 }
 
 const server = new GraphQLServer({
-  typeDefs,
+  typeDefs: './src/schema.graphql',
   resolvers
 })
 
