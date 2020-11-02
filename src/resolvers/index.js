@@ -10,5 +10,4 @@ export {
   Mutation,
   Post,
   User,
-  Comment
 }
