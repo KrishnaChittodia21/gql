@@ -3,6 +3,7 @@ import Mutation from './Mutation';
 import Post from './Post';
 import User from './User';
 import Comment from './Comment';
+import Subscription from './Subscription';
 
 export {
   Query,
@@ -10,4 +11,5 @@ export {
   Mutation,
   Post,
   User,
+  Subscription
 }
