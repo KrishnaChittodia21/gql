@@ -14,7 +14,7 @@ const  users = [{
 }]
 
 const posts = [{
-  id: '10',
+  id: "10",
   title: 'GraphQL 101',
   body: 'This is how to use GraphQL...',
   published: true,
